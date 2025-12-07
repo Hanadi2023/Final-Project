@@ -8,74 +8,90 @@ import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import rtlPlugin from 'stylis-plugin-rtl';
 
-import DashboardLayout from './components/DashboardLayout';
-import SummaryCards from './components/SummaryCards';
-import StudentStatusTable from './components/StudentsStatusTable';
-import LatestNotifications from './components/LatestNotifications';
+// استيراد الواجهات
+import AcademicSupervisorLayout from './layouts/AcademicSupervisorLayout';
+import FieldSupervisorLayout from './layouts/FieldSupervisorLayout';
+
+// استيراد الصفحات
+import AcademicSupervisorDashboard from './pages/AcademicSupervisorDashboard';
+import FieldSupervisorDashboard from './pages/FieldSupervisorDashboard';
 import ReportsPage from './pages/ReportsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import StudentsPage from './pages/StudentsPage';
 import SettingsPage from './pages/SettingsPage';
+import AddTaskPage from './pages/AddTaskPage';
+import AttendancePage from './pages/AttendancePage';
+import StudentReportsPage from './pages/StudentReportsPage';
+// ==================== بداية التعديل 1: استيراد صفحة التقييمات ====================
+import EvaluationsPage from './pages/EvaluationsPage';
+// ==================== نهاية التعديل 1 ====================
 
+
+// --- (إعدادات الـ Cache والـ Theme لا تغيير هنا) ---
 const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [rtlPlugin] });
 
-const initialNotifications = [
-    { id: 1, text: "قام الطالب 'علي إبراهيم' بتسليم مهمة.", timestamp: 'منذ 5 دقائق', read: false },
-    { id: 2, text: "قام المشرف الميداني بإرسال تقييم نهائي.", timestamp: 'منذ ساعتين', read: false },
-    { id: 3, text: "لديك تقرير جديد من 'نسيبة عبدالرحمن' بانتظار المراجعة.", timestamp: 'منذ يوم', read: true },
+interface Notification { id: number; text: string; timestamp: string; read: boolean; }
+const initialNotifications: Notification[] = [
+    { id: 1, text: 'قام الطالب علي إبراهيم بتسليم التقرير الأسبوعي الأول', timestamp: 'منذ 5 دقائق', read: false },
+    { id: 2, text: 'لديك تقييم جديد من المشرف الميداني للطالبة نسيبة', timestamp: 'منذ ساعة', read: false },
+    { id: 3, text: 'تم قبول طلب الإجازة للطالب محمد', timestamp: 'أمس', read: true },
 ];
 
 const App: React.FC = () => {
-    const [mode, setMode] = useState<'light' | 'dark'>('light');
-    const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState(initialNotifications);
+  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  // --- ملاحظة: غيرت الدور الافتراضي إلى المشرف الأكاديمي لعرض الصفحة الجديدة ---
+  const [currentUserRole, setCurrentUserRole] = useState<'ACADEMIC' | 'FIELD'>('FIELD');
 
-    const toggleColorMode = () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-    };
+  const markNotificationsAsRead = () => setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const toggleColorMode = () => setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  
+  const theme = useMemo(() => createTheme({
+    direction: 'rtl',
+    palette: {
+      mode,
+      primary: { main: '#1976d2' },
+      secondary: { main: '#dc004e' },
+    },
+    typography: {
+      fontFamily: 'Cairo, sans-serif',
+    },
+  }), [mode]);
 
-    const markNotificationsAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
-    };
+  const Layout = currentUserRole === 'ACADEMIC' ? AcademicSupervisorLayout : FieldSupervisorLayout;
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+  return (
+    <CacheProvider value={cacheRtl}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <Layout unreadCount={unreadCount}>
+            <Routes>
+              <Route path="/" element={ currentUserRole === 'ACADEMIC' ? <AcademicSupervisorDashboard notifications={notifications} /> : <FieldSupervisorDashboard notifications={notifications} /> } />
+              
+              {/* مسارات المشرف الأكاديمي */}
+              <Route path="/reports" element={<ReportsPage />} /> 
+              {/* ==================== بداية التعديل 2: استخدام صفحة التقييمات هنا ==================== */}
+              <Route path="/evaluations" element={<EvaluationsPage />} />
+              {/* ==================== نهاية التعديل 2 ==================== */}
 
-    const theme = useMemo(() => createTheme({
-        direction: 'rtl',
-        palette: {
-            mode,
-            ...(mode === 'light'
-                ? { primary: { main: '#1976d2' }, background: { default: '#f4f6f8', paper: '#ffffff' } }
-                : { primary: { main: '#90caf9' }, background: { default: '#121212', paper: '#1e1e1e' } }),
-        },
-        typography: { fontFamily: 'Tajawal, sans-serif', fontWeightBold: 700 },
-    }), [mode]);
+              {/* مسارات مشتركة */}
+              <Route path="/students" element={<StudentsPage />} />
+              <Route path="/notifications" element={<NotificationsPage notifications={notifications} onMarkAsRead={markNotificationsAsRead} />} />
+              <Route path="/settings" element={<SettingsPage mode={mode} toggleColorMode={toggleColorMode} />} />
 
-    return (
-        <CacheProvider value={cacheRtl}>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <Router>
-                    <DashboardLayout unreadCount={unreadCount}>
-                        <Routes>
-                            <Route path="/" element={
-                                <>
-                                    <SummaryCards />
-                                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mt: 4 }}>
-                                        <Box sx={{ width: '100%', flex: '2 1 0' }}><StudentStatusTable /></Box>
-                                        <Box sx={{ width: '100%', flex: '1 1 0' }}><LatestNotifications notifications={notifications} /></Box>
-                                    </Box>
-                                </>
-                            } />
-                            <Route path="/reports" element={<ReportsPage />} />
-                            <Route path="/notifications" element={<NotificationsPage notifications={notifications} onMarkAsRead={markNotificationsAsRead} />} />
-                            <Route path="/students" element={<StudentsPage />} />
-                            <Route path="/settings" element={<SettingsPage mode={mode} toggleColorMode={toggleColorMode} />} />
-                        </Routes>
-                    </DashboardLayout>
-                </Router>
-            </ThemeProvider>
-        </CacheProvider>
-    );
+              {/* مسارات المشرف الميداني */}
+              <Route path="/add-task" element={<AddTaskPage />} />
+              <Route path="/student-reports" element={<StudentReportsPage />} />
+              <Route path="/attendance" element={<AttendancePage />} />
+              
+            </Routes>
+          </Layout>
+        </Router>
+      </ThemeProvider>
+    </CacheProvider>
+  );
 };
 
 export default App;

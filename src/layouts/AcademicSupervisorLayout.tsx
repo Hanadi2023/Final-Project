@@ -1,10 +1,10 @@
-// src/components/DashboardLayout.tsx
+// src/layouts/AcademicSupervisorLayout.tsx
 
 import React from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
     AppBar, Box, Drawer, List, ListItem, ListItemButton, ListItemIcon,
-    ListItemText, Toolbar, Typography, Avatar, Badge, CssBaseline
+    ListItemText, Toolbar, Typography, Avatar, Badge, CssBaseline, IconButton
 } from '@mui/material';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
@@ -14,30 +14,28 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 
 const drawerWidth = 240;
 
-const DashboardLayout: React.FC<{ children: React.ReactNode; unreadCount: number; }> = ({ children, unreadCount }) => {
-    const location = useLocation();
+// قائمة المشرف الأكاديمي (مبسطة)
+const menuItems = [
+    { text: 'لوحة التحكم', icon: <DashboardOutlinedIcon />, path: '/' },
+    { text: 'إدارة الطلاب', icon: <PeopleOutlineIcon />, path: '/students' },
+    { text: 'مراجعة التقارير', icon: <AssignmentOutlinedIcon />, path: '/reports' },
+    { text: 'الإشعارات', icon: <NotificationsNoneOutlinedIcon />, path: '/notifications' },
+    { text: 'الإعدادات', icon: <SettingsOutlinedIcon />, path: '/settings' },
+];
 
-    const menuItems = [
-        { text: 'لوحة التحكم', icon: <DashboardOutlinedIcon />, path: '/' },
-        { text: 'إدارة الطلاب', icon: <PeopleOutlineIcon />, path: '/students' },
-        { text: 'مراجعة التقارير', icon: <AssignmentOutlinedIcon />, path: '/reports' },
-        { 
-            text: 'الإشعارات', 
-            icon: (
-                <Badge badgeContent={unreadCount} color="error">
-                    <NotificationsNoneOutlinedIcon />
-                </Badge>
-            ), 
-            path: '/notifications' 
-        },
-        { text: 'الإعدادات', icon: <SettingsOutlinedIcon />, path: '/settings' },
-    ];
+interface LayoutProps {
+    children: React.ReactNode;
+    unreadCount?: number;
+}
+
+const AcademicSupervisorLayout: React.FC<LayoutProps> = ({ children, unreadCount = 0 }) => {
+    const location = useLocation();
 
     const drawerContent = (
         <div>
             <Toolbar sx={{ justifyContent: 'center', mb: 2, mt: 1 }}>
                 <Typography variant="h5" noWrap sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-                    نظام التدريب
+                    المشرف الأكاديمي
                 </Typography>
             </Toolbar>
             <List sx={{ px: 2 }}>
@@ -57,11 +55,15 @@ const DashboardLayout: React.FC<{ children: React.ReactNode; unreadCount: number
                                 },
                             }}
                         >
-                            {/* ==================== بداية التعديل: تغيير لون الأيقونة ==================== */}
                             <ListItemIcon sx={{ color: 'primary.main' }}>
-                                {item.icon}
+                                {item.path === '/notifications' ? (
+                                    <Badge badgeContent={unreadCount} color="error">
+                                        {item.icon}
+                                    </Badge>
+                                ) : (
+                                    item.icon
+                                )}
                             </ListItemIcon>
-                            {/* ==================== نهاية التعديل ==================== */}
                             <ListItemText primary={item.text} />
                         </ListItemButton>
                     </ListItem>
@@ -73,45 +75,19 @@ const DashboardLayout: React.FC<{ children: React.ReactNode; unreadCount: number
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <AppBar 
-                position="fixed" 
-                sx={{ 
-                    width: { sm: `calc(100% - ${drawerWidth}px)` },
-                    ml: { sm: `${drawerWidth}px` },
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    boxShadow: 'none'
-                }}
-            >
+            <AppBar position="fixed" sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px`, backgroundColor: 'primary.main', color: 'white', boxShadow: 'none' }}>
                 <Toolbar sx={{ justifyContent: 'space-between' }}>
-                    <Typography variant="h6" noWrap>
-                        نظام إدارة التدريب الميداني
-                    </Typography>
+                    <Typography variant="h6" noWrap>نظام إدارة التدريب الميداني</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Typography>د. أحمد محمد</Typography>
                         <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)' }}>أ</Avatar>
                     </Box>
                 </Toolbar>
             </AppBar>
-            <Drawer
-                variant="permanent"
-                anchor="left"
-                sx={{
-                    display: { xs: 'none', sm: 'block' },
-                    width: drawerWidth,
-                    flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        boxSizing: 'border-box',
-                    },
-                }}
-            >
+            <Drawer variant="permanent" anchor="left" sx={{ width: drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' }, }}>
                 {drawerContent}
             </Drawer>
-            <Box
-                component="main"
-                sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
-            >
+            <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
                 <Toolbar />
                 {children}
             </Box>
@@ -119,4 +95,4 @@ const DashboardLayout: React.FC<{ children: React.ReactNode; unreadCount: number
     );
 };
 
-export default DashboardLayout;
+export default AcademicSupervisorLayout;
