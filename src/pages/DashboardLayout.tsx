@@ -1,7 +1,6 @@
 // src/components/DashboardLayout.tsx
-
 import React, { useState } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Box, Drawer, Badge, Avatar, Stack } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Box, Drawer, Badge } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useTheme } from '@mui/material/styles';
@@ -37,34 +36,30 @@ const DashboardLayout: React.FC<Props> = ({ children, drawerContent, unreadCount
                     >
                         <MenuIcon />
                     </IconButton>
-                    
                     <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                        نظام إدارة التدريب الميداني
+                        لوحة تحكم التدريب الميداني
                     </Typography>
-
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                        <IconButton color="inherit">
-                            <Badge badgeContent={unreadCount} color="error">
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
-                        <Typography component="span" sx={{ display: { xs: 'none', sm: 'block' } }}>
-                            هنادي أحمد
-                        </Typography>
-                        <Avatar sx={{ width: 32, height: 32 }}>H</Avatar>
-                    </Stack>
+                    <IconButton color="inherit">
+                        <Badge badgeContent={unreadCount} color="error">
+                            <NotificationsIcon />
+                        </Badge>
+                    </IconButton>
                 </Toolbar>
             </AppBar>
-
-            <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
+            <Box
+                component="nav"
+                sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+            >
                 <Drawer
                     variant={isMobile ? "temporary" : "permanent"}
                     open={isMobile ? mobileOpen : true}
                     onClose={handleDrawerToggle}
                     ModalProps={{ keepMounted: true }}
-                    sx={{ '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth } }}
+                    sx={{
+                        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+                    }}
                 >
-                    <Toolbar /> 
+                    <Toolbar />
                     <Box sx={{ overflow: 'auto' }}>
                         {drawerContent}
                     </Box>

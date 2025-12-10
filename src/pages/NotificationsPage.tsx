@@ -1,69 +1,64 @@
 // src/pages/NotificationsPage.tsx
 
 import React from 'react';
-import { Paper, Typography, List, ListItem, ListItemText, Button, Box, Divider } from '@mui/material';
+import {
+    Paper,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemAvatar,
+    Avatar,
+    Divider,
+    Box,
+    Badge,
+    Button
+} from '@mui/material';
+import { DetailedNotification } from '../App'; // <-- استيراد النوع الصحيح من App.tsx
 
-// تعريف نوع بيانات الإشعار
-interface Notification {
-    id: number;
-    text: string;
-    timestamp: string;
-    read: boolean;
-}
-
-// تعريف الخصائص (Props) التي سيستقبلها المكون
-interface NotificationsPageProps {
-    notifications: Notification[];
+// ==================== بداية الإصلاح النهائي ====================
+// الخصائص الآن تتطابق تماماً مع ما يتم إرساله من App.tsx
+interface Props {
+    notifications: DetailedNotification[];
     onMarkAsRead: () => void;
 }
 
-const NotificationsPage: React.FC<NotificationsPageProps> = ({ notifications, onMarkAsRead }) => {
-    const unreadCount = notifications.filter(n => !n.read).length;
-
+const NotificationsPage: React.FC<Props> = ({ notifications, onMarkAsRead }) => {
+// ==================== نهاية الإصلاح النهائي ====================
     return (
-        <Paper sx={{ p: 3, maxWidth: '800px', mx: 'auto' }}>
+        <Paper sx={{ p: 3, width: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h4" fontWeight="bold">
-                    الإشعارات
+                    كل الإشعارات
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    onClick={onMarkAsRead}
-                    disabled={unreadCount === 0}
-                >
-                    تعيين الكل كمقروء
+                <Button variant="text" onClick={onMarkAsRead}>
+                    تمييز الكل كمقروء
                 </Button>
             </Box>
-            <Divider sx={{ mb: 2 }} />
-            <List sx={{ p: 0 }}> {/* p: 0 لإزالة الحشو الافتراضي للقائمة */}
-                {notifications.length > 0 ? (
-                    // ==================== بداية التعديل ====================
-                    notifications.map((notification, index) => (
-                        <React.Fragment key={notification.id}>
-                            <ListItem 
-                                sx={{ 
-                                    // إزالة الهامش السفلي من هنا لأن الفاصل سيقوم بالمهمة
-                                    bgcolor: notification.read ? 'transparent' : 'action.hover',
-                                    borderRadius: 1,
-                                    transition: 'background-color 0.3s',
-                                    py: 1.5 // إضافة حشو عمودي لتحسين المظهر
-                                }}
-                            >
-                                <ListItemText
-                                    primary={notification.text}
-                                    secondary={notification.timestamp}
-                                />
-                            </ListItem>
-                            {/* نضيف الفاصل بعد كل عنصر ما عدا العنصر الأخير */}
-                            {index < notifications.length - 1 && <Divider />}
-                        </React.Fragment>
-                    ))
-                    // ==================== نهاية التعديل ====================
-                ) : (
-                    <Typography color="text.secondary" textAlign="center" sx={{ mt: 4 }}>
-                        لا توجد إشعارات لعرضها.
-                    </Typography>
-                )}
+            
+            <List sx={{ padding: 0 }}>
+                {notifications.map((notification, index) => (
+                    <React.Fragment key={notification.id}>
+                        <ListItem alignItems="flex-start" sx={{ backgroundColor: notification.read ? 'transparent' : 'action.hover' }}>
+                            <ListItemAvatar>
+                                <Badge variant="dot" color="error" invisible={notification.read} anchorOrigin={{ vertical: 'top', horizontal: 'left' }}>
+                                    <Avatar>{notification.studentName.charAt(0)}</Avatar>
+                                </Badge>
+                            </ListItemAvatar>
+                            <ListItemText
+                                primary={
+                                    <Typography component="span" variant="body2" fontWeight={notification.read ? 'normal' : 'bold'}>
+                                        <Box component="span" fontWeight="bold">{notification.studentName}</Box>
+                                        <Box component="span" color="text.secondary" sx={{ mx: 0.5 }}>({notification.studentMajor})</Box>
+                                        {notification.actionText}
+                                    </Typography>
+                                }
+                                secondary={notification.timestamp}
+                            />
+                        </ListItem>
+                        {index < notifications.length - 1 && <Divider component="li" />}
+                    </React.Fragment>
+                ))}
             </List>
         </Paper>
     );

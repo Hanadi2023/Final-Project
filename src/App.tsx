@@ -3,75 +3,117 @@
 import React, { useState, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Box } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import rtlPlugin from 'stylis-plugin-rtl';
 
-import DashboardLayout from './components/DashboardLayout';
-import SummaryCards from './components/SummaryCards';
-import StudentStatusTable from './components/StudentsStatusTable';
-import LatestNotifications from './components/LatestNotifications';
+// استيراد الواجهات والصفحات
+import AcademicSupervisorLayout from './layouts/AcademicSupervisorLayout';
+import FieldSupervisorLayout from './layouts/FieldSupervisorLayout';
+import AcademicSupervisorDashboard from './pages/AcademicSupervisorDashboard';
+import FieldSupervisorDashboard from './pages/FieldSupervisorDashboard';
 import ReportsPage from './pages/ReportsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import StudentsPage from './pages/StudentsPage';
 import SettingsPage from './pages/SettingsPage';
+import AddTaskPage from './pages/AddTaskPage';
+import AttendancePage from './pages/AttendancePage';
+// import StudentReportsPage from './pages/StudentReportsPage'; // <-- لن نستخدم هذا مؤقتاً
+import EvaluationsPage from './pages/EvaluationsPage';
+import FieldReports from './pages/FieldReports'; // <-- استيراد الصفحة الجديدة والنظيفة
 
 const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [rtlPlugin] });
 
-const initialNotifications = [
-    { id: 1, text: "قام الطالب 'علي إبراهيم' بتسليم مهمة.", timestamp: 'منذ 5 دقائق', read: false },
-    { id: 2, text: "قام المشرف الميداني بإرسال تقييم نهائي.", timestamp: 'منذ ساعتين', read: false },
-    { id: 3, text: "لديك تقرير جديد من 'نسيبة عبدالرحمن' بانتظار المراجعة.", timestamp: 'منذ يوم', read: true },
+export interface DetailedNotification {
+    id: number;
+    studentName: string;
+    studentMajor: string;
+    actionText: string;
+    timestamp: string;
+    read: boolean;
+    link: string;
+}
+
+const initialNotifications: DetailedNotification[] = [
+    { id: 1, studentName: 'علي إبراهيم', studentMajor: 'هندسة برمجيات', actionText: 'قام بتسليم مهمة "التقرير الأسبوعي الأول".', timestamp: 'منذ 5 دقائق', read: false, link: '/student-reports/1' },
+    { id: 2, studentName: 'نسيبة عبدالرحمن', studentMajor: 'علوم حاسب', actionText: 'قامت بتحديث تقرير "تحليل النظام".', timestamp: 'منذ ساعة', read: false, link: '/student-reports/2' },
+    { id: 3, studentName: 'فاطمة محسن', studentMajor: 'نظم معلومات', actionText: 'تم تقييم مهمتها "تصميم الواجهات".', timestamp: 'أمس', read: true, link: '/evaluations/3' },
+    { id: 4, studentName: 'آزاد شائع', studentMajor: 'هندسة برمجيات', actionText: 'قام بتسليم مهمة "بناء قاعدة البيانات".', timestamp: 'منذ يومين', read: true, link: '/student-reports/4' },
 ];
 
 const App: React.FC = () => {
-    const [mode, setMode] = useState<'light' | 'dark'>('light');
     const [notifications, setNotifications] = useState(initialNotifications);
+    const [mode, setMode] = useState<'light' | 'dark'>('light');
+    const [currentUserRole, setCurrentUserRole] = useState<'ACADEMIC' | 'FIELD'>('FIELD');
 
-    const toggleColorMode = () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    const toggleReadStatus = (id: number) => {
+        setNotifications(currentNotifications =>
+            currentNotifications.map(n =>
+                n.id === id ? { ...n, read: !n.read } : n
+            )
+        );
     };
 
-    const markNotificationsAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
+    const handleNotificationClick = (id: number, link: string) => {
+        setNotifications(currentNotifications =>
+            currentNotifications.map(n =>
+                n.id === id ? { ...n, read: true } : n
+            )
+        );
+        console.log(`سيتم الانتقال إلى: ${link}`);
+    };
+    
+    const markAllAsRead = () => {
+        setNotifications(currentNotifications =>
+            currentNotifications.map(n => ({ ...n, read: true }))
+        );
     };
 
     const unreadCount = notifications.filter(n => !n.read).length;
-
+    const toggleColorMode = () => setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  
     const theme = useMemo(() => createTheme({
         direction: 'rtl',
-        palette: {
-            mode,
-            ...(mode === 'light'
-                ? { primary: { main: '#1976d2' }, background: { default: '#f4f6f8', paper: '#ffffff' } }
-                : { primary: { main: '#90caf9' }, background: { default: '#121212', paper: '#1e1e1e' } }),
-        },
-        typography: { fontFamily: 'Tajawal, sans-serif', fontWeightBold: 700 },
+        palette: { mode, primary: { main: '#1976d2' }, secondary: { main: '#dc004e' } },
+        typography: { fontFamily: 'Cairo, sans-serif' },
     }), [mode]);
+
+    const Layout = currentUserRole === 'ACADEMIC' ? AcademicSupervisorLayout : FieldSupervisorLayout;
 
     return (
         <CacheProvider value={cacheRtl}>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <Router>
-                    <DashboardLayout unreadCount={unreadCount}>
+                    <Layout unreadCount={unreadCount}>
                         <Routes>
-                            <Route path="/" element={
-                                <>
-                                    <SummaryCards />
-                                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mt: 4 }}>
-                                        <Box sx={{ width: '100%', flex: '2 1 0' }}><StudentStatusTable /></Box>
-                                        <Box sx={{ width: '100%', flex: '1 1 0' }}><LatestNotifications notifications={notifications} /></Box>
-                                    </Box>
-                                </>
+                            <Route path="/" element={ 
+                                currentUserRole === 'ACADEMIC' 
+                                ? <AcademicSupervisorDashboard notifications={notifications} /> 
+                                : <FieldSupervisorDashboard 
+                                    notifications={notifications} 
+                                    onToggleRead={toggleReadStatus} 
+                                    onNotificationClick={handleNotificationClick} 
+                                  /> 
                             } />
-                            <Route path="/reports" element={<ReportsPage />} />
-                            <Route path="/notifications" element={<NotificationsPage notifications={notifications} onMarkAsRead={markNotificationsAsRead} />} />
+                            
+                            <Route path="/reports" element={<ReportsPage />} /> 
+                            <Route path="/evaluations" element={<EvaluationsPage />} />
                             <Route path="/students" element={<StudentsPage />} />
+                            
+                            <Route path="/notifications" element={<NotificationsPage notifications={notifications} onMarkAsRead={markAllAsRead} />} />
+
                             <Route path="/settings" element={<SettingsPage mode={mode} toggleColorMode={toggleColorMode} />} />
+                            <Route path="/add-task" element={<AddTaskPage />} />
+                            
+                            {/* ==================== هذا هو السطر المصحح ==================== */}
+                            <Route path="/student-reports" element={<FieldReports />} />
+                            {/* ========================================================== */}
+
+                            <Route path="/attendance" element={<AttendancePage />} />
                         </Routes>
-                    </DashboardLayout>
+                    </Layout>
                 </Router>
             </ThemeProvider>
         </CacheProvider>

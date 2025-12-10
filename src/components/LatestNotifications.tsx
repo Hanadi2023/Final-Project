@@ -1,62 +1,53 @@
 // src/components/LatestNotifications.tsx
 
 import React from 'react';
-import { Box, Typography, Paper, List, ListItem, ListItemText, Button, Divider } from '@mui/material';
+import { Paper, Typography, List, ListItem, ListItemText, Box, Divider, Button } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Link as RouterLink } from 'react-router-dom';
 
-interface Notification {
-    id: number;
-    text: string;
-    timestamp: string;
-    read: boolean;
-}
-
 interface LatestNotificationsProps {
-    notifications: Notification[];
+    notifications: Array<{ id: number; text: string; timestamp: string; read: boolean; }>;
 }
 
 const LatestNotifications: React.FC<LatestNotificationsProps> = ({ notifications }) => {
-    const latestUnread = notifications.filter(n => !n.read).slice(0, 3);
-    const notificationsToShow = latestUnread.length > 0 ? latestUnread : notifications.slice(0, 3);
+    const latest = notifications.slice(0, 3);
 
     return (
-        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <Typography variant="h6" gutterBottom>آخر الإشعارات</Typography>
+        <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" gutterBottom fontWeight="bold">
+                آخر الإشعارات
+            </Typography>
             <Divider sx={{ mb: 1 }} />
-            <List sx={{ flexGrow: 1, py: 0 }}> {/* py: 0 لإزالة الحشو العمودي الافتراضي */}
-                {notificationsToShow.length > 0 ? (
-                    // ==================== بداية التعديل ====================
-                    notificationsToShow.map((notification, index) => (
-                        // نستخدم React.Fragment للسماح بوجود عنصرين (ListItem و Divider) داخل map
+            <List sx={{ flexGrow: 1 }}>
+                {latest.length > 0 ? (
+                    latest.map((notification, index) => (
                         <React.Fragment key={notification.id}>
-                            <ListItem sx={{ py: 1.5 }}> {/* إضافة حشو عمودي بسيط */}
+                            <ListItem>
                                 <ListItemText
                                     primary={notification.text}
                                     secondary={notification.timestamp}
-                                    primaryTypographyProps={{
-                                        style: {
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }
-                                    }}
+                                    primaryTypographyProps={{ fontWeight: notification.read ? 'normal' : 'bold', fontSize: '0.9rem' }}
                                 />
                             </ListItem>
-                            {/* نضيف الفاصل بعد كل عنصر ما عدا العنصر الأخير */}
-                            {index < notificationsToShow.length - 1 && <Divider component="li" />}
+                            {index < latest.length - 1 && <Divider component="li" />}
                         </React.Fragment>
                     ))
-                    // ==================== نهاية التعديل ====================
                 ) : (
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                        <Typography color="text.secondary">لا توجد إشعارات جديدة.</Typography>
-                    </Box>
+                    <Typography color="text.secondary" textAlign="center" sx={{ mt: 4 }}>
+                        لا توجد إشعارات جديدة.
+                    </Typography>
                 )}
             </List>
-            <Divider sx={{ mt: 1 }} />
-            <Button component={RouterLink} to="/notifications" fullWidth sx={{ mt: 1 }}>
-                عرض كل الإشعارات
-            </Button>
+            
+            <Box sx={{ mt: 'auto', pt: 2, textAlign: 'center' }}>
+                <Button
+                    component={RouterLink}
+                    to="/notifications"
+                    endIcon={<ArrowForwardIcon />}
+                >
+                    عرض كل الإشعارات
+                </Button>
+            </Box>
         </Paper>
     );
 };
