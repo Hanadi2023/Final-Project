@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import {
     Paper, Typography, Box, Card, CardContent, Avatar, Chip, Button,
     TextField, Divider, List, ListItem, ListItemText, IconButton, CardHeader,
-    ToggleButton, ToggleButtonGroup
+    ToggleButton, ToggleButtonGroup,
+    CircularProgress,
 } from '@mui/material';
-import { CheckCircleOutline, ArrowBack } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 import { BarChart } from '@mui/x-charts/BarChart';
 
-// --- (أنواع البيانات والبيانات الوهمية لا تغيير هنا) ---
+// --- أنواع البيانات والبيانات الوهمية ---
 interface Student { id: number; name: string; major: string; avatar: string; }
 interface Task { title: string; grade: number; }
 const studentsData: Student[] = [
@@ -17,7 +18,11 @@ const studentsData: Student[] = [
     { id: 2, name: 'نسيبة عبدالرحمن', major: 'علوم حاسب', avatar: 'N' },
     { id: 3, name: 'فاطمة محسن', major: 'نظم معلومات', avatar: 'F' },
 ];
-const studentTasksData = { 1: 5, 2: 8, 3: 2 };
+
+const studentCompletedTasks = { 1: 5, 2: 8, 3: 2 };
+const studentTotalTasks = { 1: 8, 2: 10, 3: 5 };
+
+// ==================== بداية الإصلاح: إعادة الكود المحذوف ====================
 const evaluationCriteria = [
     { id: 'attendance', label: 'الالتزام بالحضور' },
     { id: 'behavior', label: 'السلوك والانضباط' },
@@ -35,20 +40,19 @@ const studentDetailedTasks: { [key: number]: Task[] } = {
     2: [{ title: 'تقرير تحليل النظام', grade: 5 }, { title: 'التقرير الأسبوعي الثاني', grade: 5 }],
     3: [{ title: 'مهمة 1', grade: 2 }],
 };
-// --- (نهاية البيانات الوهمية) ---
+// ==================== نهاية الإصلاح ====================
+
+// --- نهاية البيانات ---
 
 
 const StudentDetailView: React.FC<{ student: Student, onBack: () => void }> = ({ student, onBack }) => {
     const [generalRatings, setGeneralRatings] = useState<{ [key: string]: number | null }>({});
     const [finalNotes, setFinalNotes] = useState('');
     const [finalGrade, setFinalGrade] = useState<number | ''>('');
-
     const tasks: Task[] = studentDetailedTasks[student.id] || [];
     const taskAverage = tasks.length > 0 ? tasks.reduce((sum, task) => sum + task.grade, 0) / tasks.length : 0;
-
     return (
         <Box>
-            {/* --- رأس الصفحة (لا تغيير هنا) --- */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <IconButton onClick={onBack} sx={{ mr: 1 }}><ArrowBack /></IconButton>
                 <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56, mr: 2 }}>{student.avatar}</Avatar>
@@ -58,7 +62,6 @@ const StudentDetailView: React.FC<{ student: Student, onBack: () => void }> = ({
                 </Box>
             </Box>
             <Divider sx={{ mb: 3 }} />
-
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                 <Box sx={{ flex: '2 1 500px', display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <Card variant="outlined">
@@ -67,41 +70,15 @@ const StudentDetailView: React.FC<{ student: Student, onBack: () => void }> = ({
                             {evaluationCriteria.map(criterion => (
                                 <Box key={criterion.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1.5, borderBottom: '1px solid', borderColor: 'divider', '&:last-child': { borderBottom: 0 } }}>
                                     <Typography variant="body1">{criterion.label}</Typography>
-                                    <ToggleButtonGroup
-                                        value={generalRatings[criterion.id] || null}
-                                        exclusive
-                                        size="small"
-                                        onChange={(e, newValue) => {
-                                            if (newValue !== null) {
-                                                setGeneralRatings(prev => ({ ...prev, [criterion.id]: newValue }));
-                                            }
-                                        }}
-                                    >
-                                        {/* ==================== بداية التعديل: إضافة sx للأزرار ==================== */}
+                                    <ToggleButtonGroup value={generalRatings[criterion.id] || null} exclusive size="small" onChange={(e, newValue) => { if (newValue !== null) { setGeneralRatings(prev => ({ ...prev, [criterion.id]: newValue })); } }}>
                                         {[1, 2, 3, 4, 5].map((grade) => (
-                                            <ToggleButton 
-                                                key={grade} 
-                                                value={grade}
-                                                sx={{
-                                                    '&.Mui-selected': {
-                                                        backgroundColor: 'primary.main',
-                                                        color: 'white',
-                                                        '&:hover': {
-                                                            backgroundColor: 'primary.dark',
-                                                        },
-                                                    },
-                                                }}
-                                            >
-                                                {grade}
-                                            </ToggleButton>
+                                            <ToggleButton key={grade} value={grade} sx={{ '&.Mui-selected': { backgroundColor: 'primary.main', color: 'white', '&:hover': { backgroundColor: 'primary.dark', }, }, }}>{grade}</ToggleButton>
                                         ))}
-                                        {/* ==================== نهاية التعديل ==================== */}
                                     </ToggleButtonGroup>
                                 </Box>
                             ))}
                         </CardContent>
                     </Card>
-                    {/* --- بطاقة التقييم النهائي (لا تغيير هنا) --- */}
                     <Card variant="outlined">
                         <CardHeader title="التقييم النهائي" />
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -113,24 +90,14 @@ const StudentDetailView: React.FC<{ student: Student, onBack: () => void }> = ({
                         </CardContent>
                     </Card>
                 </Box>
-
-                {/* --- العمود الأيسر (لا تغيير هنا) --- */}
                 <Box sx={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <Card variant="outlined" sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                         <CardHeader title="ملخص درجات المهام" subheader={`المتوسط: ${taskAverage.toFixed(1)} / 5`} />
                         <CardContent sx={{ flexGrow: 1, overflowY: 'auto', maxHeight: '300px' }}>
-                            {tasks.length > 0 ? (
-                                <List dense>
-                                    {tasks.map((task, i) => <ListItem key={i} secondaryAction={<Chip label={`${task.grade}/5`} color="primary" size="small" />}> <ListItemText primary={task.title} /> </ListItem>)}
-                                </List>
-                            ) : <Typography sx={{ px: 2 }}>لا توجد مهام مقيّمة.</Typography>}
+                            {tasks.length > 0 ? (<List dense>{tasks.map((task, i) => <ListItem key={i} secondaryAction={<Chip label={`${task.grade}/5`} color="primary" size="small" />}> <ListItemText primary={task.title} /> </ListItem>)}</List>) : <Typography sx={{ px: 2 }}>لا توجد مهام مقيّمة.</Typography>}
                         </CardContent>
                         <Divider />
-                        {tasks.length > 0 && (
-                            <Box sx={{ p: 2 }}>
-                                <BarChart series={[{ data: tasks.map(t => t.grade) }]} height={200} xAxis={[{ data: tasks.map(t => t.title), scaleType: 'band', tickLabelStyle: { display: 'none' } }]} margin={{ top: 10, bottom: 20, left: 30, right: 10 }} />
-                            </Box>
-                        )}
+                        {tasks.length > 0 && (<Box sx={{ p: 2 }}><BarChart series={[{ data: tasks.map(t => t.grade) }]} height={200} xAxis={[{ data: tasks.map(t => t.title), scaleType: 'band', tickLabelStyle: { display: 'none' } }]} margin={{ top: 10, bottom: 20, left: 30, right: 10 }} /></Box>)}
                     </Card>
                 </Box>
             </Box>
@@ -139,7 +106,6 @@ const StudentDetailView: React.FC<{ student: Student, onBack: () => void }> = ({
 };
 
 
-// --- (المكون الرئيسي للصفحة لا تغيير هنا) ---
 const EvaluationsPage: React.FC = () => {
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     if (selectedStudent) {
@@ -151,13 +117,43 @@ const EvaluationsPage: React.FC = () => {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>استعراض سريع لجميع الطلاب الخاضعين لإشرافك. انقر على بطاقة الطالب لعرض تقييمه التفصيلي.</Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                 {studentsData.map((student) => {
-                    const completedTasks = studentTasksData[student.id as keyof typeof studentTasksData] || 0;
+                    const completed = studentCompletedTasks[student.id as keyof typeof studentCompletedTasks] || 0;
+                    const total = studentTotalTasks[student.id as keyof typeof studentTotalTasks] || 0;
+                    const progress = total > 0 ? (completed / total) * 100 : 0;
+
                     return (
                         <Box key={student.id} sx={{ flexBasis: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' }, display: 'flex' }}>
                             <Card onClick={() => setSelectedStudent(student)} sx={{ width: '100%', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } }}>
                                 <CardContent>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}><Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56, mr: 2 }}>{student.avatar}</Avatar><Box><Typography variant="h6" component="div" fontWeight="bold">{student.name}</Typography><Typography variant="body2" color="text.secondary">{student.major}</Typography></Box></Box>
-                                    <Chip icon={<CheckCircleOutline />} label={`أنجز ${completedTasks} مهمة`} variant="outlined" color={completedTasks > 0 ? "success" : "default"} sx={{ mt: 2, width: '100%' }} />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                        <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56, mr: 2 }}>{student.avatar}</Avatar>
+                                        <Box>
+                                            <Typography variant="h6" component="div" fontWeight="bold">{student.name}</Typography>
+                                            <Typography variant="body2" color="text.secondary">{student.major}</Typography>
+                                        </Box>
+                                    </Box>
+                                    
+                                    <Divider sx={{ my: 2 }} />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            نسبة الإنجاز
+                                        </Typography>
+                                        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                                            <CircularProgress variant="determinate" value={progress} />
+                                            <Box
+                                                sx={{
+                                                    top: 0, left: 0, bottom: 0, right: 0,
+                                                    position: 'absolute', display: 'flex',
+                                                    alignItems: 'center', justifyContent: 'center',
+                                                }}
+                                            >
+                                                <Typography variant="caption" component="div" color="text.secondary">
+                                                    {`${completed}/${total}`}
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    </Box>
+
                                 </CardContent>
                             </Card>
                         </Box>

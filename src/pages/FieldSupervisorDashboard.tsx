@@ -30,9 +30,9 @@ interface Props {
 // 2. البيانات الوهمية للبطاقات (تبقى هنا لأنها خاصة بهذه الصفحة فقط)
 const summaryCardsData = [
     { title: "الطلاب المتدربون", value: 12, icon: <People />, color: "#1976d2" },
-    { title: "التقارير المستلمة", value: 8, icon: <Description />, color: "#388e3c" },
+    { title: "التقارير المستلمة", value: 8, icon: <Description />, color: "#d32f2f" },
     { title: "تقارير قيد المراجعة", value: 3, icon: <RateReview />, color: "#f57c00" },
-    { title: "التقارير المعتمدة", value: 5, icon: <CheckCircle />, color: "#d32f2f" },
+    { title: "التقارير المعتمدة", value: 5, icon: <CheckCircle />, color: "#388e3c" },
 ];
 
 // 3. المكون الآن يستقبل الخصائص من App.tsx

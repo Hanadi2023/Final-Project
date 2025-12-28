@@ -19,9 +19,12 @@ import StudentsPage from './pages/StudentsPage';
 import SettingsPage from './pages/SettingsPage';
 import AddTaskPage from './pages/AddTaskPage';
 import AttendancePage from './pages/AttendancePage';
-// import StudentReportsPage from './pages/StudentReportsPage'; // <-- لن نستخدم هذا مؤقتاً
 import EvaluationsPage from './pages/EvaluationsPage';
-import FieldReports from './pages/FieldReports'; // <-- استيراد الصفحة الجديدة والنظيفة
+import FieldReports from './pages/FieldReports';
+// ==================== بداية التعديل 1: استيراد الصفحة الجديدة ====================
+import ContactPage from './pages/ContactPage';
+// ==================== نهاية التعديل 1 ====================
+
 
 const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [rtlPlugin] });
 
@@ -106,12 +109,13 @@ const App: React.FC = () => {
 
                             <Route path="/settings" element={<SettingsPage mode={mode} toggleColorMode={toggleColorMode} />} />
                             <Route path="/add-task" element={<AddTaskPage />} />
-                            
-                            {/* ==================== هذا هو السطر المصحح ==================== */}
                             <Route path="/student-reports" element={<FieldReports />} />
-                            {/* ========================================================== */}
-
                             <Route path="/attendance" element={<AttendancePage />} />
+
+                            {/* ==================== بداية التعديل 2: إضافة المسار الجديد ==================== */}
+                            <Route path="/contact" element={<ContactPage />} />
+                            {/* ==================== نهاية التعديل 2 ==================== */}
+
                         </Routes>
                     </Layout>
                 </Router>
