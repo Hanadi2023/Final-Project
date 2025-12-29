@@ -1,4 +1,4 @@
-// src/pages/AddTaskPage.tsx
+// src/pages/AddTaskPage.tsx (النسخة المصححة مع زر "تم")
 
 import React, { useState, useMemo } from 'react';
 import {
@@ -49,6 +49,10 @@ const AddTaskPage: React.FC = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [isConfirmOpen, setConfirmOpen] = useState(false);
+    
+    // ==================== بداية التعديل 1: إضافة حالة للتحكم في فتح وإغلاق القائمة ====================
+    const [isSelectOpen, setSelectOpen] = useState(false);
+    // ==================== نهاية التعديل 1 ====================
 
     const handleSelectAll = () => {
         if (selectedStudentIds.length === supervisedStudents.length) {
@@ -128,6 +132,11 @@ const AddTaskPage: React.FC = () => {
                                 })}
                             </Box>
                         )}
+                        // ==================== بداية التعديل 2: التحكم في القائمة يدوياً ====================
+                        open={isSelectOpen}
+                        onOpen={() => setSelectOpen(true)}
+                        onClose={() => setSelectOpen(false)}
+                        // ==================== نهاية التعديل 2 ====================
                         MenuProps={{ autoFocus: false }}
                     >
                         <ListSubheader>
@@ -172,6 +181,19 @@ const AddTaskPage: React.FC = () => {
                         {filteredStudents.length === 0 && (
                             <MenuItem disabled>لا توجد نتائج</MenuItem>
                         )}
+
+                        {/* ==================== بداية التعديل 3: إضافة زر "تم" ==================== */}
+                        <Box sx={{ p: 1, position: 'sticky', bottom: 0, bgcolor: 'background.paper', zIndex: 1 }}>
+                            <Divider sx={{ mb: 1 }} />
+                            <Button 
+                                fullWidth 
+                                variant="contained" 
+                                onClick={() => setSelectOpen(false)} // <-- عند الضغط عليه، يتم إغلاق القائمة
+                            >
+                                تم
+                            </Button>
+                        </Box>
+                        {/* ==================== نهاية التعديل 3 ==================== */}
                     </Select>
                 </FormControl>
 
